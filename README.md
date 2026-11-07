@@ -1,0 +1,55 @@
+# skills
+
+Skills for working with [SVN11X/standards](https://github.com/SVN11X/standards), version 1.6.1. This repository is generated from the standards repository, so do not edit it by hand.
+
+| Skill | What it does | Profiles |
+|-------|--------------|----------|
+| `repo-improve` | Improve a repository as a whole: diagnose, agree on the top improvements, deliver them one pull request at a time. | all |
+| `repo-setup` | Create a repository or reorganize an existing one under the standard. | all |
+| `code-review` | Review code or a pull request against the standard, with a deep mode for security and maintainability. | all |
+| `web-improve` | Audit and improve a website: UX, interactive explanations, accessibility, performance, GitHub Pages, verified delivery. | web |
+| `docs-review` | Review a thesis, paper, report or documentation for purpose, consistency, evidence, citations, figures and build. | docs |
+
+The skills read the rules from SVN11X/standards at the version each repository pins, so most changes to the standard reach them without reinstalling anything. This repository is also a plugin marketplace, so changes to the skills themselves arrive through automatic sync.
+
+## Install in claude.ai (once)
+
+1. Open Customize, then Plugins. Click +, then Add marketplace, and sync from the GitHub repository `SVN11X/skills`.
+2. From that marketplace, install the `standards` plugin.
+3. In the Personal tab of the plugins directory, open the menu next to the marketplace and turn on Sync automatically.
+
+Code execution must be on in Settings, Capabilities.
+
+## Install in Claude Code (once)
+
+```text
+/plugin marketplace add SVN11X/skills
+/plugin install standards@svn11x
+```
+
+Then open `/plugin`, go to Marketplaces, select `svn11x` and choose Enable auto-update.
+
+## Install in other agents
+
+With Node.js installed, this installs into Codex, Gemini CLI, GitHub Copilot, Cursor and others. Run it again to update.
+
+```bash
+npx skills add SVN11X/skills
+```
+
+By hand, copy each folder in `skills/` into the skills folder of your tool: `~/.codex/skills/`, `~/.gemini/skills/`, `~/.copilot/skills/`, `~/.cursor/skills/`, or `.agents/skills/` inside one project.
+
+## Recommended skills from other authors
+
+These are maintained by their authors. Install them from their own source so they keep updating. The standard lists them in each repository's `AGENTS.md` when they fit the profile.
+
+| Skills | Profiles | Source |
+|--------|----------|--------|
+| antislop, antislop-ui, antislop-human, antislop-layoutmobile, antislop-copywriting, antislop-code | web, docs, software | Marketplace `miqdadbadjuber/anti-slop` (MIT) |
+| academic-paper-reviewer and related research skills | docs | `Imbad0202/academic-research-skills` (CC BY-NC 4.0) |
+| frontend-design, design | web | Anthropic's official plugin directory in Claude |
+| diagrams | docs, software, hardware | Claude's plugin directory |
+
+## Without the marketplace
+
+Each release also attaches `repo-setup.zip` and `code-review.zip`, which can be uploaded in Customize, Skills.

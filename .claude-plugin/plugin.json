@@ -1,0 +1,10 @@
+{
+  "name": "standards",
+  "version": "1.3.0",
+  "description": "Skills for the SVN11X/standards repository standard: repo-setup and code-review.",
+  "author": {
+    "name": "SVN11X"
+  },
+  "repository": "https://github.com/SVN11X/skills",
+  "license": "MIT"
+}

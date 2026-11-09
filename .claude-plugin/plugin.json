@@ -1,0 +1,10 @@
+{
+  "name": "standards",
+  "version": "1.12.0",
+  "description": "Skills for the SVN11X/standards repository standard: adversarial-testing, agent-benchmark, code-review, data-preservation, docs-review, repo-improve, repo-setup, safe-patch, tool-radar, web-improve.",
+  "author": {
+    "name": "SVN11X"
+  },
+  "repository": "https://github.com/SVN11X/skills",
+  "license": "MIT"
+}

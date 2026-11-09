@@ -1,0 +1,163 @@
+# Rules and files shared by every profile.
+version: 1.11.0
+
+required_files:
+  - README.md
+  - AGENTS.md
+  - CLAUDE.md
+  - .standard.yml
+  - .gitignore
+  - .gitattributes
+  - .editorconfig
+  - .gemini/settings.json
+  - docs/README.md
+  - docs/goals.md
+  - docs/glossary.md
+  - docs/assumptions.md
+  - docs/decisions/README.md
+  - docs/specs/README.md
+  - .github/pull_request_template.md
+  - .github/ISSUE_TEMPLATE/task.yml
+  - .github/workflows/standard.yml
+
+# Skills every repository lists, before the profile's own skills.
+skills: [repo-improve, code-review, tool-radar]
+
+gitignore:
+  - .standards/
+  - .env
+  - .env.*
+  - "!.env.example"
+  - .DS_Store
+  - Thumbs.db
+  - "*.log"
+  - .idea/
+
+fixed:
+  - Keep the top-level layout listed above. A new top-level folder is a yellow change.
+  - Only standard files and tool manifests live at the repository root. Everything else goes into a folder of the layout.
+  - Every top-level folder has a README.md saying what goes there, what does not and how files are named.
+  - Commit small, focused changes with Conventional Commits messages (feat, fix, docs, refactor, test, chore).
+  - Never commit secrets, tokens, personal data, executables, or files over 5 MB outside Git LFS.
+  - Leave the repository passing the standard check.
+  - Credit every third-party asset, model, dataset, font or icon set with its source, author and license, in LICENSES/ or docs/credits.md.
+  - Write diagrams as text in Mermaid syntax, so GitHub and sites render the same source. Use an image only when that is not possible.
+
+anti_slop:
+  - No comments that restate the code, narrate steps or decorate (banners, emoji).
+  - No speculative abstractions, dead code, unused dependencies or leftover placeholder data.
+  - No fabricated content. Statistics, testimonials, references and links must be real and verified.
+  - No marketing words (seamless, cutting-edge, revolutionary, game-changer, supercharge).
+  - Plain prose. Short sentences, no filler openers, no em dashes or semicolons as separators.
+
+banned_words:
+  - seamless
+  - seamlessly
+  - cutting-edge
+  - revolutionary
+  - game-changer
+  - game-changing
+  - supercharge
+  - unleash
+  - delve
+  - next-level
+  - elevate your
+  - unlock the power
+  - in today's fast-paced
+
+placeholder_hosts:
+  - via.placeholder.com
+  - placehold.co
+  - placehold.it
+  - picsum.photos
+  - dummyimage.com
+
+# Files allowed at the repository root. Files starting with a dot are always allowed. Anything else is an error.
+root_files:
+  - README.md
+  - LICENSE
+  - LICENSE.*
+  - LICENSE-*
+  - NOTICE
+  - NOTICE.*
+  - THIRD-PARTY*
+  - THIRD_PARTY*
+  - DATA-LICENSE*
+  - ROADMAP.md
+  - AUTHORS*
+  - GOVERNANCE.md
+  - turbo.json
+  - nx.json
+  - lerna.json
+  - CHANGELOG.md
+  - AGENTS.md
+  - CLAUDE.md
+  - GEMINI.md
+  - DESIGN.md
+  - CITATION.cff
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - CODE_OF_CONDUCT.md
+  - SUPPORT.md
+  - pyproject.toml
+  - setup.py
+  - setup.cfg
+  - requirements*.txt
+  - uv.lock
+  - poetry.lock
+  - Pipfile
+  - Pipfile.lock
+  - environment.yml
+  - package.json
+  - package-lock.json
+  - pnpm-lock.yaml
+  - pnpm-workspace.yaml
+  - yarn.lock
+  - bun.lock
+  - bun.lockb
+  - deno.json
+  - deno.jsonc
+  - deno.lock
+  - tsconfig*.json
+  - jsconfig.json
+  - "*.config.js"
+  - "*.config.cjs"
+  - "*.config.mjs"
+  - "*.config.ts"
+  - Makefile
+  - justfile
+  - Taskfile.yml
+  - Dockerfile
+  - docker-compose*.yml
+  - compose*.yml
+  - Cargo.toml
+  - Cargo.lock
+  - go.mod
+  - go.sum
+  - CMakeLists.txt
+  - platformio.ini
+  - mkdocs.yml
+  - _quarto.yml
+  - wrangler.toml
+  - wrangler.jsonc
+  - netlify.toml
+  - vercel.json
+  - firebase.json
+  - renovate.json
+  - "*.code-workspace"
+
+# Top-level folders every profile allows. LICENSES/ follows the REUSE specification for license texts.
+always_folders: [docs, LICENSES]
+
+# Executables do not belong in git. Download them in a setup script instead.
+forbidden_extensions: [exe, dll, msi, dmg, so, dylib, jar, apk]
+
+# A top-level folder with more files than this is a warning: large data belongs in external storage, releases or LFS.
+max_files_per_folder: 2000
+
+# Hidden folders allowed at the top level. Declare any other one in .standard.yml under extra_folders.
+hidden_folders: [.github, .gemini, .vscode, .devcontainer, .husky, .claude, .agents, .cursor, .codex, .changeset, .dvc, .streamlit, .storybook]
+
+max_file_mb: 5
+max_agents_lines: 150
+max_plan_item_chars: 240

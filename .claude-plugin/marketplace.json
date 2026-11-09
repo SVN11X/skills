@@ -1,0 +1,21 @@
+{
+  "name": "svn11x",
+  "owner": {
+    "name": "SVN11X"
+  },
+  "metadata": {
+    "description": "Skills for the SVN11X/standards repository standard: code-review, docs-review, repo-improve, repo-setup, tool-radar, web-improve.",
+    "version": "1.11.0"
+  },
+  "plugins": [
+    {
+      "name": "standards",
+      "source": "./",
+      "description": "Skills for the SVN11X/standards repository standard: code-review, docs-review, repo-improve, repo-setup, tool-radar, web-improve.",
+      "version": "1.11.0",
+      "author": {
+        "name": "SVN11X"
+      }
+    }
+  ]
+}

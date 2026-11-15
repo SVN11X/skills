@@ -1,0 +1,498 @@
+#!/usr/bin/env python3
+"""Independent verifier: runs every check that applies and writes one report, JSON and Markdown.
+
+  python scripts/verify.py                          standard level, offline
+  python scripts/verify.py --level deep --live      everything, including the real Ollama and OpenCode
+
+Levels: quick (seconds), standard (adds fake executors in real worktrees, unit tests, linters when
+installed), deep (adds live probes). --live adds the executors of this machine. --ci makes the
+linters required. The verdict is PASS only when every required check passed or was skipped with a
+reason. A check that could not run is NOT_RUN, never PASS.
+
+In the standards repository it checks the standard itself. In any other repository it runs the
+standard check, the tests it finds, the data snapshot comparison and the controls of the standard.
+The report goes inside the git folder (standards/reports), so it is never committed.
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+import os
+import py_compile
+import re
+import shutil
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
+sys.path.insert(0, str(HERE))
+import adversarial  # noqa: E402
+import evidence  # noqa: E402
+import orchestrate  # noqa: E402
+import preserve  # noqa: E402
+
+R = evidence.result
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    sys.exit("PyYAML is required. Install it with: pip install pyyaml")
+
+
+def sh(cmd, cwd: Path, timeout: int = 900, shell: bool = False) -> dict:
+    return orchestrate.run(cmd, cwd=cwd, timeout=timeout, shell=shell)
+
+
+def is_standards_repo(repo: Path) -> bool:
+    return (repo / "scripts" / "standard.py").exists() and (repo / "base" / "base.yml").exists()
+
+
+# Checks of the standards repository
+
+
+def check_compile(repo: Path) -> dict:
+    broken = []
+    files = [p for folder in ("scripts", "hooks", "skills", "tests") for p in (repo / folder).rglob("*.py")]
+    with tempfile.TemporaryDirectory() as tmp:
+        for index, path in enumerate(files):
+            try:
+                py_compile.compile(str(path), doraise=True, cfile=str(Path(tmp) / f"{index}.pyc"))
+            except py_compile.PyCompileError as error:
+                broken.append(f"{path.relative_to(repo)}: {error.msg.strip()[:120]}")
+    return R("S.python-compiles", "build", "FAIL" if broken else "PASS", severity="critical",
+             evidence="; ".join(broken) or f"{len(files)} Python files compile", repro="python -m py_compile <file>")
+
+
+def check_command(check_id: str, category: str, cmd, repo: Path, expected: str, timeout: int = 900, shell=False) -> dict:
+    ran = sh(cmd, repo, timeout, shell)
+    text = (ran["stdout"] + ran["stderr"]).strip()
+    status = "PASS" if ran["exit"] == 0 else ("ERROR" if ran["exit"] is None else "FAIL")
+    return R(check_id, category, status, severity="critical", evidence=f"{ran['seconds']}s. " + text[-1500:],
+             repro=cmd if isinstance(cmd, str) else " ".join(map(str, cmd)), expected=expected)
+
+
+def frontmatter(text: str) -> dict | None:
+    match = re.match(r"^---\n(.*?)\n---\n", text.replace("\r\n", "\n"), re.DOTALL)
+    return yaml.safe_load(match.group(1)) if match else None
+
+
+def check_skills(repo: Path) -> dict:
+    problems, names = [], []
+    for skill in sorted((repo / "skills").glob("*/SKILL.md")):
+        try:
+            meta = frontmatter(skill.read_text(encoding="utf-8"))
+        except yaml.YAMLError as error:
+            problems.append(f"{skill.parent.name}: YAML does not parse: {error}")
+            continue
+        if not meta:
+            problems.append(f"{skill.parent.name}: no frontmatter")
+            continue
+        names.append(meta.get("name"))
+        if meta.get("name") != skill.parent.name:
+            problems.append(f"{skill.parent.name}: name is {meta.get('name')!r}")
+        description = str(meta.get("description") or "")
+        if not 40 <= len(description) <= 1024:
+            problems.append(f"{skill.parent.name}: description has {len(description)} characters")
+        for ref in re.findall(r"`(references/[\w./-]+)`", skill.read_text(encoding="utf-8")):
+            bundled = ref.startswith("references/patterns") and (repo / "patterns").is_dir()
+            if not (skill.parent / ref).exists() and not bundled:
+                problems.append(f"{skill.parent.name}: {ref} does not exist")
+    return R("S.skills", "contract", "FAIL" if problems else "PASS", severity="high",
+             evidence="; ".join(problems) or f"{len(names)} skills parse: {', '.join(names)}",
+             expected="every SKILL.md parses, its name matches its folder, its references exist")
+
+
+def check_settings(repo: Path) -> list[dict]:
+    results = []
+    conf = yaml.safe_load((repo / "settings" / "orchestration.yml").read_text(encoding="utf-8"))
+    problems = [key for key in ("privacy", "tasks", "limits", "executors", "protected") if key not in conf]
+    for task, candidates in (conf.get("tasks") or {}).items():
+        unknown = set(candidates) - {"tools", "ollama", "opencode", "api", "claude", "colibri"}
+        if unknown:
+            problems.append(f"task {task}: unknown executors {sorted(unknown)}")
+    classes = conf.get("privacy", {}).get("classes", {})
+    if set(classes) != set(conf.get("privacy", {}).get("order", [])):
+        problems.append("privacy order and classes differ")
+    if classes.get("work", {}).get("remote_free") != "deny" or classes.get("restricted", {}).get("remote_claude") != "deny":
+        problems.append("work or restricted code could reach a remote model")
+    cost = conf.get("cost") or {}
+    modes = cost.get("modes") or {}
+    if set(modes) != set(cost.get("order") or []) or cost.get("default") not in modes:
+        problems.append("cost order, modes and default differ")
+    if modes.get("local-only", {}).get("remote_free") != "deny" or modes.get("local-only", {}).get("remote_claude") != "deny":
+        problems.append("local-only could send something out")
+    if modes.get("free-strict", {}).get("remote_claude") != "deny":
+        problems.append("free-strict could use a subscription")
+    if {"paid", "trial", "unknown", "subscription"} & set(cost.get("free_categories") or []):
+        problems.append("a paid, trial or unknown cost counts as free")
+    if any(classes.get(name, {}).get("remote_data") for name in ("work", "restricted")):
+        problems.append("work or restricted code names a remote data use")
+    stray = [task for task in [*(conf.get("proven_only") or []), *(conf.get("needs") or {})] if task not in (conf.get("tasks") or {})]
+    if stray:
+        problems.append(f"rules for task types that do not exist: {stray}")
+    planning = conf.get("planning") or {}
+    tiers = planning.get("tiers") or {}
+    if set(tiers) != {"light", "medium", "advanced"} or planning.get("repair_tier") not in ("light", "medium"):
+        problems.append("planning needs the tiers light, medium and advanced, and a repair tier below advanced")
+    if planning.get("opus_on_block") is not False or planning.get("opus_max_concurrent") != 1:
+        problems.append("a plan could reach Opus on its own or run two Opus calls at once")
+    limits = conf.get("concurrency") or {}
+    if (limits.get("pools") or {}).get("local") != 1 or limits.get("tests") != 1:
+        problems.append("two local models or two test suites could run at once")
+    results.append(R("S.orchestration-policy", "security", "FAIL" if problems else "PASS", severity="critical",
+                     evidence="; ".join(problems) or "policy loads, client code never reaches free models, free modes never pay",
+                     expected="every task names known executors, work code stays local and a free mode cannot reach paid or subscription models"))
+    models = yaml.safe_load((repo / "settings" / "models.yml").read_text(encoding="utf-8")) or {}
+    costs = {"local", "free-quota", "free-promo", "subscription", "trial", "paid", "unknown"}
+    wrong, seen = [], set()
+    for entry in models.get("models") or []:
+        key = (entry.get("executor"), entry.get("id"))
+        name = f"{key[0]}:{key[1]}"
+        if key in seen:
+            wrong.append(f"{name}: listed twice")
+        seen.add(key)
+        if entry.get("executor") not in {"ollama", "opencode"} or not entry.get("id"):
+            wrong.append(f"{name}: executor or id")
+        if entry.get("cost") not in costs:
+            wrong.append(f"{name}: cost")
+        if entry.get("evidence") not in {"declared", "candidate"}:
+            wrong.append(f"{name}: evidence")
+        data = entry.get("data") or {}
+        if {str(data.get("stores")), str(data.get("trains"))} - {"yes", "no", "unknown"}:
+            wrong.append(f"{name}: data use")
+        if entry.get("enabled") or (entry.get("evidence") == "declared" and not entry.get("checked")):
+            wrong.append(f"{name}: enabled by default, or declared without a date")
+        if entry.get("executor") == "opencode" and not entry.get("source"):
+            wrong.append(f"{name}: no source to read again")
+    results.append(R("S.model-catalog", "security", "FAIL" if wrong else "PASS", severity="high",
+                     evidence="; ".join(wrong[:8]) or f"{len(seen)} candidates with cost, data use, evidence and source. None is enabled here",
+                     expected="every model candidate says its cost, data use, evidence level and where to check it again"))
+    listed = (yaml.safe_load((repo / "settings" / "providers.yml").read_text(encoding="utf-8")) or {}).get("providers") or {}
+    free = set(cost.get("free_categories") or [])
+    faults = []
+    for name, entry in listed.items():
+        if entry.get("status") not in {"adapter", "no-adapter", "retired"} or entry.get("cost") not in costs or not entry.get("sources"):
+            faults.append(f"{name}: status, cost or sources")
+        if entry.get("status") != "adapter":
+            continue
+        address = str(entry.get("base_url") or "")
+        if not address.startswith("https://") or not entry.get("key_env") or entry.get("protocol") != "openai":
+            faults.append(f"{name}: needs an https base_url, a key_env and a known protocol")
+        if entry.get("free_rule") not in {"zero-price", "plan"} or entry.get("preflight") not in {"openrouter-key", "owner"}:
+            faults.append(f"{name}: free_rule or preflight")
+        if set(entry.get("features") or []) - {"chat", "json", "tools", "vision"}:
+            faults.append(f"{name}: unknown feature")
+        data = entry.get("data") or {}
+        if {str(data.get("stores")), str(data.get("trains"))} - {"yes", "no", "unknown"}:
+            faults.append(f"{name}: data use")
+        if any(key for key in entry if "secret" in key.lower() or key.lower() in {"key", "token", "api_key"}):
+            faults.append(f"{name}: a key must come from the environment, never from this file")
+    callable_now = sorted(name for name, entry in listed.items() if entry.get("status") == "adapter" and entry.get("cost") in free)
+    results.append(R("S.provider-settings", "security", "FAIL" if faults else "PASS", severity="high",
+                     evidence="; ".join(faults[:8]) or f"{len(listed)} providers. With a free offer and an adapter: {', '.join(callable_now)}. No key is stored",
+                     expected="every provider says its status, cost, sources and data use, uses https and takes its key from the environment"))
+    opencode = json.loads((repo / "settings" / "opencode" / "opencode.json").read_text(encoding="utf-8"))
+    bash, edit = opencode["permission"]["bash"], opencode["permission"]["edit"]
+    lost = [rule for rule, want in (("git push --force*", "deny"), ("gh pr merge*", "deny"), ("git filter-*", "deny"),
+                                    ("git commit*", "ask"), ("rm *", "ask")) if bash.get(rule) != want]
+    lost += ["*AGENTS.md" for _ in [0] if edit.get("*AGENTS.md") != "deny"]
+    if opencode.get("share") != "disabled":
+        lost.append("share")
+    results.append(R("S.opencode-rules-kept", "security", "FAIL" if lost else "PASS", severity="critical",
+                     evidence=f"weakened: {lost}" if lost else "share disabled, force push and merge denied, AGENTS.md protected",
+                     expected="the OpenCode config never loses a protective rule"))
+    import router
+    wrong_recipes = router.check(yaml.safe_load((repo / "settings" / "recipes.yml").read_text(encoding="utf-8")))
+    results.append(R("S.recipes", "contract", "FAIL" if wrong_recipes else "PASS", severity="high",
+                     evidence="; ".join(wrong_recipes[:8]) or "every recipe names known capabilities and a proof, and every provider "
+                              "has a status source, its clients and what leaves the machine",
+                     expected="settings/recipes.yml points only at capabilities, radar entries and MCP servers that exist"))
+    catalog = yaml.safe_load((repo / "settings" / "mcp" / "catalog.yml").read_text(encoding="utf-8"))
+    radar_status = {"adopt", "trial", "assess", "hold"}
+    bad = []
+    for server in catalog.get("servers", []):
+        launch = " ".join(server.get("launch", []))
+        if server.get("status") not in radar_status:
+            bad.append(f"{server.get('name')}: status")
+        pinned = re.search(r"@\d+\.\d+\.\d+|==\d+\.\d+\.\d+", launch)
+        if server.get("status") in {"adopt", "trial"} and not pinned:
+            bad.append(f"{server.get('name')}: not pinned")
+        if "latest" in launch:
+            bad.append(f"{server.get('name')}: uses latest")
+        if server.get("status") in {"adopt", "trial"} and not server.get("leaves_machine"):
+            bad.append(f"{server.get('name')}: does not say what leaves the machine")
+    results.append(R("S.mcp-catalog", "security", "FAIL" if bad else "PASS", severity="high",
+                     evidence="; ".join(bad) or f"{len(catalog.get('servers', []))} servers, trial ones pinned, none on by default",
+                     expected="exact versions and a privacy note for every server in use"))
+    return results
+
+
+def check_explanation(repo: Path) -> dict:
+    """The standard follows its own rule: docs/how-it-works.md exists, is confirmed and names only real paths."""
+    import standard
+    path = repo / "docs" / "how-it-works.md"
+    if not path.exists():
+        return R("S.how-it-works", "contract", "FAIL", severity="medium", evidence="docs/how-it-works.md is missing")
+    text = path.read_text(encoding="utf-8")
+    problems = [f"names {token}, which does not exist" for token in standard.missing_doc_paths(repo, text)]
+    problems += ["still has TODO(owner) lines"] if standard.OWNER_TODO in text else []
+    problems += ["README.md does not link it"] if "docs/how-it-works.md" not in (repo / "README.md").read_text(encoding="utf-8") else []
+    return R("S.how-it-works", "contract", "FAIL" if problems else "PASS", severity="medium",
+             evidence="; ".join(problems) or "docs/how-it-works.md exists, README.md links it and every path it names exists",
+             expected="the explanation of how the repository works is present and true to the files")
+
+
+def check_gallery(repo: Path) -> dict:
+    """The pattern gallery of web-improve in a real browser. It needs Node and Playwright, and is skipped without them."""
+    script = repo / "tests" / "web" / "gallery.test.mjs"
+    if not script.exists() or not shutil.which("node"):
+        return R("S.gallery", "web", "SKIP", severity="info", evidence="Node is not installed" if script.exists() else "no gallery test here")
+    ran = sh(["node", str(script)], repo, 300)
+    lines = [line for line in (ran["stdout"] or "").splitlines() if line.strip()]
+    if ran["exit"] == 77:
+        return R("S.gallery", "web", "SKIP", severity="info", evidence="Playwright is not installed for Node. Run it where a browser is available.")
+    failed = [line for line in lines if line.startswith("FAIL")]
+    return R("S.gallery", "web", "PASS" if ran["exit"] == 0 else "FAIL", severity="medium",
+             evidence="; ".join(failed)[:800] or f"{len(lines)} browser checks passed: keyboard, touch, language, states, reduced motion, contrast",
+             repro="node tests/web/gallery.test.mjs",
+             expected="every pattern works with keyboard and touch, keeps its state across languages and stays still with reduced motion")
+
+
+def check_control_page(repo: Path) -> dict:
+    """The Autopilot view of Standards AI Control in a real browser, against a real server and seeded state."""
+    script = repo / "tests" / "web" / "control.test.mjs"
+    if not script.exists() or not shutil.which("node"):
+        return R("S.control-page", "web", "SKIP", severity="info", evidence="Node is not installed" if script.exists() else "no control page test here")
+    ran = sh(["node", str(script)], repo, 300)
+    lines = [line for line in (ran["stdout"] or "").splitlines() if line.strip()]
+    if ran["exit"] == 77:
+        return R("S.control-page", "web", "SKIP", severity="info", evidence="Playwright is not installed for Node. Run it where a browser is available.")
+    failed = [line for line in lines if line.startswith("FAIL")]
+    return R("S.control-page", "web", "PASS" if ran["exit"] == 0 else "FAIL", severity="medium",
+             evidence="; ".join(failed)[:800] or f"{len(lines)} browser checks passed: units, agents, pull request, pause, cancel, jobs, token, every view, 360 px",
+             repro="node tests/web/control.test.mjs",
+             expected="the page shows the real state of each unit, its controls write only the plan's control file or start a bounded job, and no view has a script error")
+
+
+def check_ruff(repo: Path, required: bool) -> dict:
+    if not shutil.which("ruff"):
+        status = "NOT_RUN" if required else "SKIP"
+        return R("S.ruff-critical", "build", status, severity="medium", required=required,
+                 evidence="ruff is not installed" + ("" if required else ". CI runs it."))
+    ran = sh(["ruff", "check", "--isolated", "--select", "E9,F63,F7,F82,F401,F841", "scripts", "hooks", "tests"], repo, 120)
+    return R("S.ruff-critical", "build", "PASS" if ran["exit"] == 0 else "FAIL", severity="medium", required=required,
+             evidence=(ran["stdout"] + ran["stderr"]).strip()[-1500:] or "no syntax errors, undefined names or unused imports",
+             repro="ruff check --isolated --select E9,F63,F7,F82,F401,F841 scripts hooks tests")
+
+
+def check_powershell(repo: Path) -> dict:
+    """Parse every .ps1 with the real parser. On Windows this is Windows PowerShell 5.1."""
+    builtin = Path(os.environ.get("WINDIR", r"C:\Windows")) / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+    shell = shutil.which("powershell") or (str(builtin) if os.name == "nt" and builtin.exists() else None) or shutil.which("pwsh")
+    files = sorted((repo / "scripts").glob("*.ps1"))
+    if not shell or not files:
+        return R("S.powershell-parse", "build", "SKIP", severity="medium", required=False,
+                 evidence="no PowerShell here" if files else "no .ps1 files")
+    listed = ", ".join("'" + str(f).replace("'", "''") + "'" for f in files)
+    script = (f"$bad = @(); foreach ($f in @({listed})) {{ $e = $null; "
+              "[System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$e) | Out-Null; "
+              "if ($e.Count) { $bad += ($f + ': ' + $e[0].Message) } }; "
+              "Write-Output (($PSVersionTable.PSVersion.ToString()) + ' ' + ($bad -join ' | ')); exit $bad.Count")
+    ran = sh([shell, "-NoProfile", "-NonInteractive", "-Command", script], repo, 120)
+    return R("S.powershell-parse", "build", "PASS" if ran["exit"] == 0 else "FAIL", severity="medium", required=False,
+             evidence=f"PowerShell {(ran['stdout'] or ran['stderr']).strip()[:600]}, {len(files)} scripts")
+
+
+# Checks of any repository that follows the standard
+
+
+def standard_script(repo: Path) -> Path:
+    return repo / "scripts" / "standard.py" if is_standards_repo(repo) else HERE / "standard.py"
+
+
+def detect_tests(repo: Path) -> tuple[str | None, str]:
+    package = repo / "package.json"
+    if package.exists():
+        scripts = json.loads(package.read_text(encoding="utf-8")).get("scripts", {})
+        if "test" in scripts:
+            return ("npm test" if shutil.which("npm") else None), "package.json has a test script"
+    tests = repo / "tests"
+    if tests.is_dir() and any(tests.rglob("test_*.py")):
+        if (repo / "pytest.ini").exists() or (repo / "pyproject.toml").exists() and "pytest" in (repo / "pyproject.toml").read_text(encoding="utf-8"):
+            return (f'"{sys.executable}" -m pytest -q' if shutil.which("pytest") else None), "pytest tests"
+        return f'"{sys.executable}" -m unittest discover -s tests -t .', "unittest tests"
+    return None, "no tests found"
+
+
+def check_repository(repo: Path) -> list[dict]:
+    results = []
+    if (repo / ".standard.yml").exists():
+        results.append(check_command("R.standard-check", "contract", [sys.executable, str(standard_script(repo)), "check", str(repo)],
+                                     repo, "the repository follows its profile"))
+    else:
+        results.append(R("R.standard-check", "contract", "SKIP", severity="info", evidence="no .standard.yml here"))
+    command, why = detect_tests(repo)
+    if command:
+        results.append(check_command("R.tests", "regression", command, repo, "the repository's tests pass", 1800, shell=True))
+    elif why == "no tests found":
+        results.append(R("R.tests", "regression", "SKIP", severity="medium", evidence="no tests found. Add them."))
+    else:
+        results.append(R("R.tests", "regression", "NOT_RUN", severity="high", evidence=f"{why}, but the runner is not installed"))
+    config = preserve.load_config(repo, None)
+    if config.get("protect") or config.get("json_ids"):
+        baseline = preserve.default_baseline(repo)
+        if baseline.exists():
+            results += preserve.compare(repo, config, json.loads(baseline.read_text(encoding="utf-8")))
+        else:
+            results.append(R("R.preservation", "data", "NOT_RUN", severity="high", evidence="docs/preservation.yml exists but no snapshot",
+                             fix="run python <standard>/scripts/preserve.py snapshot before the change"))
+    return results
+
+
+# Live checks on this machine
+
+
+def live_checks(repo: Path) -> list[dict]:
+    results = []
+    caps = orchestrate.doctor(full=True)
+    found = [f"Python {caps['python']}", caps.get("git") or "no git",
+             f"OpenCode {caps['opencode'].get('version')}" if caps["opencode"].get("path") else "no OpenCode",
+             f"Ollama with {len(caps['ollama']['models'])} models" if caps["ollama"]["up"] else "Ollama off",
+             f"GPU {caps['gpu']['name']} {caps['gpu']['vram_used_mib']}/{caps['gpu']['vram_total_mib']} MiB" if caps.get("gpu") else "no NVIDIA GPU seen",
+             f"FTS5 {'yes' if caps['sqlite_fts5'] else 'no'}"]
+    results.append(R("L.doctor", "environment", "PASS", severity="info", evidence=", ".join(found)))
+    if not caps["sqlite_fts5"]:
+        results.append(R("L.fts5", "environment", "FAIL", severity="medium", evidence="this Python has no SQLite FTS5, memory.py cannot work"))
+    shells = caps.get("shells")
+    if shells:
+        ok = shells["powershell_on_path"] or not shells["powershell_exists"]
+        results.append(R("L.windows-shell", "environment", "PASS" if ok else "FAIL", severity="low", required=False,
+                         evidence=f"powershell.exe on PATH: {shells['powershell_on_path']}, exists: {shells['powershell_exists']}, pwsh: {shells['pwsh']}. "
+                                  "orchestrate.py adds its folder to the PATH of every executor it starts",
+                         fix="add %WINDIR%\\System32\\WindowsPowerShell\\v1.0 to your user PATH so other tools find it too"))
+    conf = orchestrate.policy()
+    if caps["ollama"]["up"]:
+        model, note = orchestrate.pick_ollama_model(conf["executors"]["ollama"], caps["ollama"])
+        reply = orchestrate.delegate_ollama('Answer with JSON {"ok": true} and nothing else.', want_json=True, conf=conf,
+                                            caps=caps["ollama"]) if model else {"state": "blocked", "checks": {}}
+        metrics = reply.get("metrics") or {}
+        results.append(R("L.ollama-direct", "executor", "PASS" if reply["state"] == "verified" else "FAIL", severity="medium",
+                         evidence=f"{model or note}: {reply['state']} in {reply.get('seconds')}s, "
+                                  f"{metrics.get('tokens_per_s')} tokens/s, load {round((metrics.get('load_duration') or 0) / 1e9, 2)}s",
+                         repro="python scripts/orchestrate.py delegate ollama --task \"Say OK\""))
+        row = orchestrate.bench_classify("ollama", model) if model else None
+        if row and row.get("skipped"):
+            row = None
+        base = orchestrate.bench_classify("tools", None)
+        for item in filter(None, [row, base]):
+            orchestrate.append_bench(item)
+        results.append(R("L.bench-classify", "benchmark", "PASS", severity="info", required=False,
+                         evidence=f"keywords without AI: accuracy {base['accuracy']} in {base['seconds']}s. "
+                                  + (f"{model}: accuracy {row['accuracy']} in {row['seconds']}s." if row else "no Ollama model")))
+    else:
+        results.append(R("L.ollama-direct", "executor", "SKIP", severity="info", evidence="Ollama is not running. The suite already checks the fallback."))
+    local = orchestrate.local_config()
+    models = orchestrate.checked_free_models(local, conf)
+    if not caps["opencode"].get("path"):
+        results.append(R("L.opencode-delegation", "executor", "SKIP", severity="info", evidence="OpenCode is not installed"))
+    elif not models:
+        results.append(R("L.opencode-delegation", "executor", "SKIP", severity="info",
+                         evidence="no free model checked today. Record one with: python scripts/orchestrate.py consent "
+                                  "--path <your repositories folder> --class personal-public --free-model <id from opencode models>"))
+    else:
+        for model in models:
+            row = orchestrate.bench_fix("opencode", model)
+            if row["state"] != "blocked":
+                orchestrate.append_bench(row)
+            results.append(R(f"L.opencode-delegation:{model}", "executor", "PASS" if row["verified"] else "FAIL", severity="medium",
+                             evidence=f"{row['state']}, hidden tests {row['hidden_tests']}, {row['seconds']}s, checks {row['checks']}, note {row['error']}",
+                             repro=f"python scripts/orchestrate.py bench --executors opencode:{model}"))
+    servers = [s for s in orchestrate.mcp_catalog() if s.get("status") in {"adopt", "trial"}]
+    for server in servers:
+        inspected = orchestrate.mcp_inspect(server["name"])
+        detail = inspected.get("error") or f"{len(inspected.get('tools', []))} tools, write tools: {inspected.get('write_tools')}"
+        results.append(R(f"L.mcp:{server['name']}", "mcp", inspected["status"], severity="low", required=False,
+                         evidence=detail, repro=f"python scripts/orchestrate.py mcp inspect {server['name']}"))
+    return results
+
+
+def failed_evidence(results: list[dict]) -> list[str]:
+    """The evidence of every check that did not pass, in full. The table shows one line per check, so without
+    this the log of a CI run names the failed check and hides which test failed inside it."""
+    return [f"\n--- {item['status']} {item['id']} ---\n{(item['error'] or item['evidence'])[-4000:]}\n"
+            for item in results if item["status"] in ("FAIL", "ERROR") and (item["error"] or item["evidence"])]
+
+
+def default_out(repo: Path) -> Path:
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    try:
+        rel = orchestrate.git(repo, "rev-parse", "--git-path", f"standards/reports/{stamp}")
+        path = Path(rel)
+        return path if path.is_absolute() else repo / path
+    except RuntimeError:
+        return orchestrate.home() / "reports" / stamp
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--level", choices=["quick", "standard", "deep"], default="standard")
+    parser.add_argument("--live", action="store_true", help="also check the executors of this machine")
+    parser.add_argument("--ci", action="store_true", help="linters are required")
+    parser.add_argument("--repo", type=Path, default=Path.cwd())
+    parser.add_argument("--out", type=Path)
+    args = parser.parse_args(argv)
+    repo = args.repo.resolve()
+    started = time.monotonic()
+    results: list[dict] = []
+    print(f"verify {args.level}{' live' if args.live else ''} in {repo}", flush=True)
+    if is_standards_repo(repo):
+        results.append(check_compile(repo))
+        results.append(check_command("S.selftest", "regression", [sys.executable, "scripts/standard.py", "selftest"], repo,
+                                     "every profile passes init and check, hooks behave"))
+        results.append(check_skills(repo))
+        results += check_settings(repo)
+        results.append(check_explanation(repo))
+        if args.level != "quick":
+            results.append(check_command("S.unit-tests", "regression",
+                                         [sys.executable, "-m", "unittest", "discover", "-s", "tests"],
+                                         repo, "the unit tests of the scripts pass"))
+            results.append(check_ruff(repo, args.ci))
+            results.append(check_gallery(repo))
+            results.append(check_control_page(repo))
+            results.append(check_powershell(repo))
+    else:
+        results += check_repository(repo)
+    suite = adversarial.run_suite(args.level, repo)
+    if args.ci:
+        for item in suite:
+            if item["id"] in {"G.actionlint", "G.zizmor"}:
+                item["required"] = True
+                if item["status"] == "SKIP":
+                    item["status"] = "NOT_RUN"
+    results += suite
+    if args.live:
+        try:
+            results += live_checks(repo)
+        except Exception as error:  # noqa: BLE001 (a broken probe is reported as ERROR)
+            results.append(R("L.live", "environment", "ERROR", error=f"{type(error).__name__}: {error}"))
+    report = evidence.build_report("verify", args.level, results, {"seconds": round(time.monotonic() - started, 1),
+                                                                  "repository": str(repo), "live": args.live})
+    json_path, md_path = evidence.write_report(report, args.out or default_out(repo))
+    width = max(len(r["id"]) for r in results)
+    for item in sorted(results, key=lambda r: ({"FAIL": 0, "ERROR": 1, "NOT_RUN": 2, "SKIP": 3, "PASS": 4}[r["status"]], r["id"])):
+        flag = "" if item["required"] else " (optional)"
+        print(f"{item['status']:<7} {item['id']:<{width}} {(item['error'] or item['evidence']).splitlines()[0][:110] if (item['error'] or item['evidence']) else ''}{flag}")
+    print("".join(failed_evidence(results)), end="")
+    counts = report["counts"]
+    print(f"\n{report['verdict']} in {report['seconds']}s. PASS {counts['PASS']}, FAIL {counts['FAIL']}, ERROR {counts['ERROR']}, "
+          f"NOT_RUN {counts['NOT_RUN']}, SKIP {counts['SKIP']}")
+    print(f"Report: {md_path}\nData:   {json_path}")
+    return 0 if report["verdict"] == "PASS" else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

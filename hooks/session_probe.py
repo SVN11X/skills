@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""SessionStart hook: tell the session which executors this machine has, in about a second.
+
+It only looks: is OpenCode on the PATH, does the local Ollama answer, which free models the owner
+checked, the cost mode, and the privacy class of this folder. It installs nothing, connects to nothing remote and
+never blocks the session. Detection is not delegation: the session still runs orchestrate.py route
+and orchestrate.py delegate, which do the work and verify it.
+"""
+import json
+import os
+import shutil
+import socket
+import subprocess
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import autopilot  # noqa: E402
+
+
+def orchestrate_path() -> Path | None:
+    candidates = []
+    root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if root:
+        candidates.append(Path(root) / "skills" / "repo-setup" / "standard" / "scripts" / "orchestrate.py")
+    candidates.append(Path(__file__).resolve().parents[1] / "scripts" / "orchestrate.py")
+    return next((path for path in candidates if path.is_file()), None)
+
+
+def ollama_up(host: str = "127.0.0.1", port: int = 11434) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=0.4):
+            return True
+    except OSError:
+        return False
+
+
+def owner_facts(repo: Path) -> tuple[str, int, str]:
+    path = Path(os.environ.get("STANDARDS_HOME") or Path.home() / ".standards") / "local.yml"
+    if not path.exists():
+        return "not set (default personal-private)", 0, "not set (default existing-subscription)"
+    try:
+        import yaml
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception:  # noqa: BLE001 (the hook never breaks a session)
+        return "unknown", 0, "unknown"
+    target = str(repo).replace("\\", "/").lower()
+    best = ""
+    for entry in data.get("folders") or []:
+        pattern = str(entry.get("path", "")).replace("\\", "/").lower().rstrip("/*")
+        if target.startswith(pattern) and len(pattern) > len(best):
+            best = pattern
+            cls = entry.get("class")
+    return ((cls if best else "not set (default personal-private)"), len(data.get("free_models") or []),
+            str(data.get("cost_mode") or "not set (default existing-subscription)"))
+
+
+def recover(script: Path | None) -> None:
+    """Start the user's supervisor once, in the background, so a plan whose process died resumes without a command.
+    STANDARDS_NO_SUPERVISOR=1 turns it off. The hook never waits for it."""
+    target = script.with_name("supervisor.py") if script else None
+    if os.environ.get("STANDARDS_NO_SUPERVISOR") or target is None or not target.is_file():
+        return
+    flags = ({"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0)}
+             if os.name == "nt" else {"start_new_session": True})
+    subprocess.Popen([sys.executable, str(target), "once"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL, **flags)
+
+
+def follows_standard(root: Path) -> bool:
+    """True for a repository with .standard.yml, or for the standard's own source (base/base.yml and profiles/)."""
+    return (root / ".standard.yml").is_file() or ((root / "base" / "base.yml").is_file() and (root / "profiles").is_dir())
+
+
+def context(cwd: Path) -> str | None:
+    root = autopilot.repository_root(cwd)
+    if root is None or not follows_standard(root):
+        return None
+    script = orchestrate_path()
+    recover(script)
+    privacy, free, cost = owner_facts(root)
+    parts = [f"OpenCode {'found' if shutil.which('opencode') else 'not installed'}",
+             f"Ollama {'answering' if ollama_up() else 'off'}",
+             f"free models checked by the owner: {free}", f"privacy of this folder: {privacy}", f"cost mode: {cost}"]
+    command = f'python "{script}"' if script else "python <standard>/scripts/orchestrate.py"
+    return ("Executors on this machine: " + ", ".join(parts) + ". "
+            "Use a program without AI first for search, lint, tests and hashes. Before handing a task to another model, run "
+            f"`{command} route <task-type> --repo . --files <n> --risk <green|yellow|red>` and, when it names opencode or "
+            f"ollama, `{command} delegate ...`. That command checks the diff, the protected files and the tests itself. "
+            f"`{command} route --all --repo .` lists who does each task type here and why. A blocked task is reduced or goes "
+            "to the owner, never to a paid model. Never treat an executor's own summary as evidence.")
+
+
+def main() -> int:
+    if hasattr(sys.stdin, "reconfigure"):  # Claude Code sends UTF-8, a Windows pipe would read it as cp1252
+        sys.stdin.reconfigure(encoding="utf-8")
+    try:
+        data = json.load(sys.stdin)
+    except ValueError:
+        data = {}
+    try:
+        text = context(Path(data.get("cwd") or os.getcwd()))
+    except Exception:  # noqa: BLE001 (fail open, the session must start)
+        text = None
+    try:
+        import style
+        text = "\n\n".join(t for t in (text, style.startup_lines(str(data.get("session_id") or ""))) if t) or None
+    except Exception:  # noqa: BLE001
+        pass
+    if text:
+        print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": text}}))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

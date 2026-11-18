@@ -1,0 +1,85 @@
+# MCP servers the standard knows. None is on by default. Turn one on for a task with:
+#   python scripts/orchestrate.py mcp config <name> --client claude|opencode
+# and paste the output into the project's .mcp.json or opencode.json. Check it first with:
+#   python scripts/orchestrate.py mcp inspect <name>
+# "Free" covers the server code only. The services behind it can have limits or keep what you send.
+# Versions are exact and at least two weeks old on the day they were pinned. Status matches radar/radar.yml.
+inspector: "@modelcontextprotocol/inspector@2.12.0"
+pinned: 2026-11-09
+
+servers:
+  - name: context7
+    purpose: current library documentation by version
+    status: trial
+    mode: read-only
+    launch: [npx, -y, "@upstash/context7-mcp@4.4.4"]
+    license: MIT
+    leaves_machine: library names and the questions asked, sent to Upstash
+    overlap: web fetch of official docs. Use Context7 when the API changes between versions.
+    profiles: [web, software, data-ai]
+  - name: playwright
+    purpose: drive a real browser to reproduce a UI bug
+    status: trial
+    mode: browser
+    launch: [npx, -y, "@playwright/mcp@0.0.83", --isolated, --headless]
+    license: Apache-2.0
+    leaves_machine: only the pages it opens
+    overlap: Playwright Test. MCP explores, Playwright Test is the evidence that stays in the repository.
+    profiles: [web]
+  - name: serena
+    purpose: symbol search and references through language servers
+    status: assess
+    mode: read-write
+    launch: [uvx, --from, "serena-agent==2.1.0", serena, start-mcp-server]
+    license: GPL-3.0-or-later for the agent, MIT for its language server layer
+    leaves_machine: nothing by itself
+    overlap: grep, ripgrep and the agent's own search. Adopt only if a bench shows fewer reads on a large repository.
+    profiles: [software, data-ai]
+  - name: flaui
+    purpose: launch a Windows app, read its UI Automation tree, click, type, send keys and capture a window, to reproduce a UX problem
+    status: assess
+    mode: read-write
+    # A downloaded executable, not a package: take FlaUI-MCP-win-x64-0.2.0-self-contained.zip from the GitHub releases
+    # (v0.2.1 is from 2026-11-07, under two weeks old), extract it and replace this with the full path of its .exe.
+    launch: [FlaUI-MCP.exe]
+    license: MIT
+    leaves_machine: nothing. It reads and drives only the windows it is asked to, with no shell, file or registry tool
+    overlap: scripts/desktop_ux.py measures without driving the app. FlaUI does the task the way a person does.
+    profiles: [software]
+  - name: microsoft-learn
+    purpose: official Microsoft documentation, including the Windows UX guidelines on fonts, layout, focus and notifications
+    status: trial
+    mode: read-only
+    url: https://learn.microsoft.com/api/mcp
+    license: a free service of Microsoft
+    leaves_machine: the questions asked, sent to Microsoft
+    overlap: web fetch of learn.microsoft.com. The server searches and returns the passages, which saves reading whole pages.
+    profiles: [software, web, infra]
+  - name: windows-mcp
+    purpose: operate a Windows app like a person to reproduce a UX problem, read its UI tree and take screenshots
+    status: hold
+    mode: read-write
+    launch: [uvx, --from, "windows-mcp==0.8.8", windows-mcp, serve]
+    license: MIT
+    leaves_machine: nothing by itself, but it has full access to the desktop, its files and the registry
+    overlap: scripts/desktop_ux.py measures without touching the app. Use this only on a test account with nothing else open.
+    profiles: [software]
+  - name: github
+    purpose: issues, pull requests and CI status
+    status: assess
+    mode: read-only
+    launch: [docker, run, -i, --rm, -e, GITHUB_PERSONAL_ACCESS_TOKEN, -e, GITHUB_READ_ONLY=1, ghcr.io/github/github-mcp-server]
+    pinned_tag: false
+    license: MIT
+    leaves_machine: requests to the GitHub API with your token
+    overlap: the gh CLI, which the owner already has logged in. Prefer gh.
+    profiles: [web, software, data-ai, hardware, docs, infra]
+  - name: filesystem
+    purpose: file access limited to one folder, for clients without their own file tools
+    status: hold
+    mode: read-write
+    launch: [npx, -y, "@modelcontextprotocol/server-filesystem@2.0.1", "."]
+    license: see the package LICENSE
+    leaves_machine: nothing by itself
+    overlap: Claude Code and OpenCode already read and edit files with their own permissions.
+    profiles: [software]

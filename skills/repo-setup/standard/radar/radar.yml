@@ -1,0 +1,1096 @@
+# Evaluated tools. Keep one entry per tool, newest evaluation date wins. See README.md for the fields.
+entries:
+  - name: CSS scroll-driven animations
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/animation-timeline
+    status: adopt
+    profiles: [web]
+    kind: reference
+    license: web standard
+    cost: free
+    privacy: nothing leaves the browser
+    expression: [balanced, expressive]
+    notes: Supported in all modern browsers. Use only when motion explains something, animate transform and opacity, wrap in @supports with a static fallback, and respect prefers-reduced-motion.
+    evaluated: 2026-11-08
+  - name: Pele
+    url: https://github.com/obsidianmd/pele
+    status: trial
+    profiles: [web, docs]
+    kind: library
+    license: MIT
+    cost: free
+    privacy: renders in the browser
+    expression: [sober, balanced, expressive]
+    notes: Renders Mermaid syntax to SVG, small and synchronous, themed with CSS variables. Use it in sites that render diagrams. README files keep plain Mermaid, which GitHub renders.
+    evaluated: 2026-11-08
+  - name: runonweb
+    url: https://github.com/midudev/runonweb.ai
+    status: trial
+    profiles: [web, data-ai]
+    kind: library
+    license: MIT for the code, each model keeps its own license
+    cost: free
+    privacy: runs in the browser, but downloads the models to the device
+    expression: [sober, balanced, expressive]
+    notes: Speech to text, object detection, image embeddings and more with open-weight models. Useful where downloading models is allowed. Credit each model used.
+    evaluated: 2026-11-08
+  - name: anatomy
+    url: https://github.com/wheresryan22/anatomy
+    status: trial
+    profiles: [web, docs]
+    kind: skill
+    license: MIT
+    cost: free
+    privacy: local, no API keys
+    expression: [balanced, expressive]
+    notes: Interactive isometric figures that explain a concept through a physical metaphor. Label metaphors as illustrative and show the real model next to them.
+    evaluated: 2026-11-08
+  - name: HyperFrames
+    url: https://github.com/heygen-com/hyperframes
+    status: trial
+    profiles: [web, docs]
+    kind: skill
+    license: Apache-2.0
+    cost: free
+    privacy: local rendering
+    expression: [balanced, expressive]
+    notes: Videos written as HTML, CSS and JavaScript. Check that the export is an H.264 MP4 that plays everywhere.
+    evaluated: 2026-11-08
+  - name: better-claude
+    url: https://github.com/midudev/better-claude
+    status: trial
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: plugin
+    license: MIT
+    cost: free
+    privacy: local
+    expression: []
+    notes: Install only Sub Meter (usage), Context Meter (when to compact) and Time Machine (a snapshot per turn). Commit overlaps with the autopilot, and Image Preview is untested on Windows.
+    evaluated: 2026-11-08
+  - name: antislop
+    url: https://github.com/miqdadbadjuber/anti-slop
+    status: adopt
+    profiles: [web, docs, software]
+    kind: skill
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Filters generic interface, copy and code patterns. Install from its own marketplace so it keeps updating.
+    evaluated: 2026-11-08
+  - name: React Bits
+    url: https://reactbits.dev
+    status: hold
+    profiles: [web]
+    kind: library
+    license: see its repository
+    cost: free
+    privacy: local
+    expression: [expressive]
+    notes: Decorative animated React components. Only for expressive repositories that already use React, with a decision record per component.
+    evaluated: 2026-11-08
+  - name: DSH SuperAgent
+    url: https://github.com/deepseek-ai/dsh-superagent-prototype
+    status: assess
+    profiles: [software]
+    kind: reference
+    license: MIT
+    cost: needs the DeepSeek platform
+    privacy: sends repository content to the provider
+    expression: []
+    notes: Research prototype of an agent that turns GitHub events into pull requests. Learn from its numbered docs and authorization model. Event-driven agents on public repositories can be steered by anyone who opens an issue.
+    evaluated: 2026-11-08
+  - name: ThinkRail
+    url: https://github.com/JetBrains/thinkrail
+    status: assess
+    profiles: [software]
+    kind: app
+    license: see its repository
+    cost: free
+    privacy: depends on the configured agent
+    expression: []
+    notes: Agentic IDE with isolated worktrees, living specs and skills. Ideas adopted by the standard. No need to switch tools.
+    evaluated: 2026-11-08
+  - name: SeshDock
+    url: https://github.com/Avoiptv/seshdock
+    status: assess
+    profiles: [software]
+    kind: app
+    license: MIT
+    cost: free
+    privacy: local and read-only
+    expression: []
+    notes: Finds Claude Code and Codex sessions on the machine. The Windows installer is not signed yet.
+    evaluated: 2026-11-08
+  - name: Google Developer Knowledge MCP
+    url: https://developers.google.com/knowledge/mcp
+    status: trial
+    profiles: [data-ai, software, docs, infra]
+    kind: tool
+    license: Google hosted service, terms of service apply
+    cost: no price stated in the docs, needs a Google Cloud project, quotas apply
+    privacy: queries and the API key are sent to Google, no repository content
+    expression: []
+    notes: Official remote MCP server in public preview that searches and reads public Google developer docs (Cloud, Firebase, Android, Maps). Use it only to verify facts against current docs, never as a runtime dependency. Keep the API key out of repositories, restrict it to this API and give each repository its own project quota. Re-check pricing and preview status before relying on it.
+    evaluated: 2026-11-08
+  - name: OpenCode
+    url: https://github.com/anomalyco/opencode
+    status: trial
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: MIT
+    cost: free, its free models have rate limits, other providers bill separately
+    privacy: free models keep prompts and code, other providers receive repository content, only a local model through Ollama keeps everything on the machine
+    expression: []
+    notes: Second coding agent for small, verified work on a free model, so Claude usage goes to planning and reviews. Reads AGENTS.md and the skills in ~/.agents/skills. Set it up with scripts/setup-opencode.ps1. Never run /init, it rewrites the generated AGENTS.md. Never sign in with a Claude subscription, Anthropic allows it only in Claude Code and claude.ai. Use free models only in personal repositories, never with work or client code. Hooks and Claude Code subagents do not run there, so repo-improve and deep reviews stay in Claude Code.
+    evaluated: 2026-11-08
+  - name: Ollama
+    url: https://github.com/ollama/ollama
+    status: trial
+    profiles: [web, software, data-ai, hardware]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local, models are downloaded once. A tag that ends in cloud runs on Ollama's servers and counts as remote
+    expression: [sober, balanced, expressive]
+    notes: Called directly through its API by scripts/orchestrate.py for short local work. On a 6 GB card qwen3.5:4b ran fully on the GPU and qwen3.5:9b split with the CPU and was several times slower, one machine, November 2026. Never use embedding models for chat. In web work it classifies a request into a sub-profile and writes alt text and microcopy. It reviews a screenshot only with a model that reads images and passed the design-judge bench. It never sets visual direction.
+    evaluated: 2026-11-10
+  - name: Context7 MCP
+    url: https://github.com/upstash/context7
+    status: trial
+    profiles: [web, software, data-ai]
+    kind: tool
+    license: MIT
+    cost: free tier with limits
+    privacy: library names and questions go to Upstash
+    expression: [sober, balanced, expressive]
+    notes: Current documentation by library version. Off by default, turned on per task from settings/mcp/catalog.yml at a pinned version.
+    evaluated: 2026-11-09
+  - name: Playwright MCP
+    url: https://github.com/microsoft/playwright-mcp
+    status: trial
+    profiles: [web]
+    kind: tool
+    license: Apache-2.0
+    cost: free
+    privacy: only the pages it opens
+    expression: [sober, balanced, expressive]
+    notes: Explores and reproduces UI bugs in a real browser. The evidence that stays is a Playwright Test case, not the exploration.
+    evaluated: 2026-11-09
+  - name: Serena MCP
+    url: https://github.com/oraios/serena
+    status: assess
+    profiles: [software, data-ai]
+    kind: tool
+    license: GPL-3.0-or-later for the agent, MIT for its language server layer
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Symbol search through language servers. Overlaps with the agents' own search. Move to trial only after a bench shows fewer reads on a large repository.
+    evaluated: 2026-11-09
+  - name: GitHub MCP Server
+    url: https://github.com/github/github-mcp-server
+    status: assess
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: requests to the GitHub API with a personal token
+    expression: [sober, balanced, expressive]
+    notes: Overlaps with the gh CLI the owner already uses. If ever used, read-only mode with a token limited to the needed repositories.
+    evaluated: 2026-11-09
+  - name: MCP Inspector
+    url: https://github.com/modelcontextprotocol/inspector
+    status: trial
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: Apache-2.0 for new code, MIT for older parts
+    cost: free
+    privacy: local, stores server secrets in the OS keychain
+    expression: [sober, balanced, expressive]
+    notes: Lists the tools of an MCP server before it is turned on. Used by orchestrate.py mcp inspect.
+    evaluated: 2026-11-09
+  - name: Promptfoo
+    url: https://github.com/promptfoo/promptfoo
+    status: assess
+    profiles: [data-ai, software]
+    kind: tool
+    license: MIT
+    cost: free, the models it calls may not be
+    privacy: sends prompts to the providers under test
+    expression: [sober, balanced, expressive]
+    notes: Prompt and model evaluation and red teaming. The deterministic suite in scripts/adversarial.py covers the controls without it. Consider it for repositories that ship prompts.
+    evaluated: 2026-11-09
+  - name: actionlint
+    url: https://github.com/rhysd/actionlint
+    status: adopt
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Validates GitHub Actions workflows. Runs in the selftest workflow at a pinned version with a checksum.
+    evaluated: 2026-11-09
+  - name: zizmor
+    url: https://github.com/zizmorcore/zizmor
+    status: adopt
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local with --offline
+    expression: [sober, balanced, expressive]
+    notes: Security audit of workflows. Found 16 real problems in this repository (unpinned actions, tokens kept by checkout), all fixed in 1.12.0.
+    evaluated: 2026-11-09
+  - name: Ruff
+    url: https://github.com/astral-sh/ruff
+    status: adopt
+    profiles: [software, data-ai, hardware, infra]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Python linter and formatter. verify.py gates on syntax errors, undefined names and unused imports only, so older code is not flooded with style findings.
+    evaluated: 2026-11-09
+  - name: uv
+    url: https://github.com/astral-sh/uv
+    status: trial
+    profiles: [software, data-ai, hardware, infra]
+    kind: tool
+    license: MIT or Apache-2.0
+    cost: free
+    privacy: downloads packages from PyPI
+    expression: [sober, balanced, expressive]
+    notes: Fast Python environments and tool runs (uvx). Optional, the standard's scripts need only Python and PyYAML.
+    evaluated: 2026-11-09
+  - name: pytest
+    url: https://github.com/pytest-dev/pytest
+    status: adopt
+    profiles: [software, data-ai, hardware, infra]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Default test runner for Python repositories. The standard's own tests use unittest so they need nothing installed.
+    evaluated: 2026-11-09
+  - name: Playwright Test
+    url: https://github.com/microsoft/playwright
+    status: adopt
+    profiles: [web]
+    kind: tool
+    license: Apache-2.0
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Reproducible browser tests and visual snapshots for websites. See web-improve references/regression-testing.md.
+    evaluated: 2026-11-09
+  - name: ast-grep
+    url: https://github.com/ast-grep/ast-grep
+    status: trial
+    profiles: [software, web, data-ai]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Structural search and rewrite by syntax tree. Use it instead of a model for mechanical code changes across many files.
+    evaluated: 2026-11-09
+  - name: Renovate
+    url: https://github.com/renovatebot/renovate
+    status: hold
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: AGPL-3.0-only
+    cost: free
+    privacy: reads the repository through its app or runner
+    expression: [sober, balanced, expressive]
+    notes: Dependabot is built into GitHub and covers the need without another app. Revisit only if grouping rules become necessary.
+    evaluated: 2026-11-09
+  - name: SQLite FTS5
+    url: https://www.sqlite.org/fts5.html
+    status: adopt
+    profiles: [software, data-ai]
+    kind: library
+    license: public domain
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Full-text index behind scripts/memory.py. Included in the official Python builds for Windows. verify.py --live checks it.
+    evaluated: 2026-11-09
+  - name: sqlite-vec
+    url: https://github.com/asg017/sqlite-vec
+    status: assess
+    profiles: [data-ai]
+    kind: library
+    license: MIT or Apache-2.0
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: "Vector search inside SQLite. scripts/memory.py now adds meaning vectors to FTS5 and compares them in Python, which is enough for a few thousand notes. Add sqlite-vec only when the number of vectors or the search time asks for an index."
+    evaluated: 2026-11-21
+  - name: just
+    url: https://github.com/casey/just
+    status: hold
+    profiles: [software, infra]
+    kind: tool
+    license: CC0-1.0
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: A command runner. The standard's scripts and README sections already name every command, so it adds a tool without a gain.
+    evaluated: 2026-11-09
+  - name: Manim Community
+    url: https://github.com/ManimCommunity/manim
+    status: trial
+    profiles: [web, docs]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local, renders on your machine and sends nothing out
+    expression: [balanced, expressive]
+    notes: Python animation engine. Used in GCP_Data_Engineer_Fieldnotes for three silent 23 to 30 second WebM clips of 0.4 to 0.6 MB each, rendered at 480p15 and shipped with a poster and WebVTT captions. Render time only, so it is not a dependency of the site. Needs ffmpeg and a Python 3.11 virtual environment outside the repository. Use plain text labels, because Tex needs a LaTeX install. Register the open font with manimpango so the labels match the site. Credit the font used in the video.
+    evaluated: 2026-11-09
+  - name: Mermaid CLI
+    url: https://github.com/mermaid-js/mermaid-cli
+    status: trial
+    profiles: [web, docs]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local, renders with a browser on your machine and sends nothing out
+    expression: [sober, balanced, expressive]
+    notes: Renders Mermaid text to SVG. Used in GCP_Data_Engineer_Fieldnotes as a dev dependency with puppeteer_skip_download=true in .npmrc, so npm ci in CI downloads no browser. Render by hand with a local Chrome or Edge through PUPPETEER_EXECUTABLE_PATH and commit the SVG. Set a fixed width and height on the image from the viewBox. Labels in foreignObject use a fallback font inside an img tag, so check them. Pele is the in-browser alternative.
+    evaluated: 2026-11-09
+  # Candidates from the owner's notes of 2026-11-10. None was opened or run from the session that added them:
+  # license, cost and privacy stay "not verified" until someone reads the source. assess means do not install yet.
+  - name: FreeLLMAPI
+    url: https://github.com/tashfeenahmed/freellmapi
+    status: assess
+    profiles: [software, data-ai, web]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Optional gateway that routes requests among free providers. First candidate to evaluate as a backend. Listening on localhost does not make it local: the requests go to remote providers, so orchestrate.py counts any gateway as remote. Before trial: prove with a fake server that it can be limited to an allowed list of provider and model before anything is sent, that its internal fallback stays inside that list, which provider answered, and that no charge is possible. Keep fusion and caching of private data off. The adapter and these four checks pass against a fake gateway (tests/test_gateway.py), the real service is still unproven."
+    evaluated: 2026-11-10
+  - name: Paperclip
+    url: https://github.com/paperclipai/paperclip
+    status: assess
+    profiles: [software, web, data-ai]
+    kind: app
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Optional board to follow several agents and projects: goals, tasks, roles and budgets. It organizes work, it does not decide cost or privacy. Before trial: one stable id across the board task, the run, the worktree and the evidence, one writer per worktree, no delegation loop with the router, and a local deployment without an account. A budget based on reported spend arrives late, so free-strict still needs the gate before each request."
+    evaluated: 2026-11-10
+  - name: Taste Skill
+    url: https://github.com/Leonxlnx/taste-skill
+    status: assess
+    profiles: [web]
+    kind: skill
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Candidate for web-improve, on demand. Before trial: check that it does not contradict DESIGN.md, antislop, the stack of the project and the accessibility rules."
+    evaluated: 2026-11-10
+  - name: Vercel Agent Skills
+    url: https://github.com/vercel-labs/agent-skills
+    status: assess
+    profiles: [web]
+    kind: skill
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Holds the Web Design Guidelines, a candidate reference for reviews. Before trial: list the rules that add something and the ones that repeat or contradict the web profile."
+    evaluated: 2026-11-10
+  - name: Awesome DESIGN.md
+    url: https://github.com/VoltAgent/awesome-design-md
+    status: assess
+    profiles: [web]
+    kind: reference
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Examples of visual systems written as DESIGN.md. Read them to learn the format, adapt to the project's own identity, and never present a brand's file as endorsed by that brand."
+    evaluated: 2026-11-10
+  - name: Imagegen Skills
+    url: https://github.com/Leonxlnx/imagegen-skills
+    status: assess
+    profiles: [web]
+    kind: skill
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Holds image-to-code, an optional pipeline from reference images to an implementation. Before trial: which image generator it needs and the cost of the whole flow. A free skill can depend on a paid generator."
+    evaluated: 2026-11-10
+  - name: Playwright CLI
+    url: https://github.com/microsoft/playwright-cli
+    status: assess
+    profiles: [web]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Candidate to explore a page from the terminal. Before trial: what it adds over Playwright MCP and Playwright Test, its versions and the evidence it leaves."
+    evaluated: 2026-11-10
+  - name: pixelslop
+    url: https://github.com/gabelul/pixelslop
+    status: assess
+    profiles: [web]
+    kind: skill
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Candidate for the measured layer of the design judgment. The owner's notes say Apache 2.0 and that it measures with Playwright at three screen sizes. Before trial: confirm the license, the overlap with antislop and with measure_page.mjs, and that it runs in OpenCode."
+    evaluated: 2026-11-10
+  - name: Colibri
+    url: https://github.com/JustVugg/colibri
+    status: assess
+    profiles: [software, data-ai]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Local inference engine that spreads a model across GPU, RAM and disk. It is not a router of providers. Before trial: start with a small compatible model and a budget of disk and time. Never download its large example model on a 6 GB card."
+    evaluated: 2026-11-10
+  - name: TwIL-8B
+    url: https://huggingface.co/webAI-Official/TwIL-8B
+    status: assess
+    profiles: [software, data-ai]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "A local model, experimental here. The owner's notes say a quantized variant of about 5 GiB, a non-commercial license and limited evaluation of tool use. Before trial: confirm the license fits the use, and measure it with the analyzer. Weight size does not include context and run-time memory."
+    evaluated: 2026-11-10
+  - name: claude-mem
+    url: https://github.com/thedotmack/claude-mem
+    status: assess
+    profiles: [software, web, data-ai]
+    kind: plugin
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Memory plugin for Claude Code. Evaluate it only after scripts/memory.py falls short. Before trial: where the observer, the summaries, the sync and the captures run, which provider writes the summaries and what that costs. Local storage does not mean local processing."
+    evaluated: 2026-11-10
+  - name: Agent-Reach
+    url: https://github.com/Panniantong/Agent-Reach
+    status: assess
+    profiles: [software, docs, data-ai]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Optional read connector for outside channels. Some channels need a login or a transcription key. Before trial: the channels, accounts, keys, permissions and limits. Never copy a browser session or connect an account without the owner."
+    evaluated: 2026-11-10
+  - name: Archify
+    url: https://github.com/tt-a1i/archify
+    status: assess
+    profiles: [software, web, docs]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Optional architecture diagrams. Before trial: that the diagram matches the code, its labels and the export. The standard keeps Mermaid as the diagram source."
+    evaluated: 2026-11-10
+  - name: text-to-cad
+    url: https://github.com/earthtojake/text-to-cad
+    status: assess
+    profiles: [hardware]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Optional CAD from a description. Before trial: a parametric format, correct dimensions, validation and export. A convincing picture does not prove measurements or that a part can be made."
+    evaluated: 2026-11-10
+  - name: MoneyPrinterTurbo
+    url: https://github.com/harry0703/MoneyPrinterTurbo
+    status: assess
+    profiles: [docs]
+    kind: app
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Optional short video generation. Before trial: the chain of models, voices, stock assets and rendering, and whether all of it stays inside the free rules."
+    evaluated: 2026-11-10
+  - name: learn
+    url: https://github.com/amosblomqvist/learn
+    status: assess
+    profiles: [docs, web]
+    kind: reference
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Configuration for the Pi agent with skills and extensions for tutoring. It is not a Claude Code skill. Take the ideas that help (explain in parts, ask for recall, check understanding) and rebuild quizzes with the tools the agent really has."
+    evaluated: 2026-11-10
+  - name: i-have-adhd
+    url: https://github.com/ayghri/i-have-adhd
+    status: assess
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: skill
+    license: MIT
+    cost: free
+    privacy: local
+    expression: []
+    notes: "Answer style: next action first, numbered steps, one next action, visible progress, lists of at most 5, no preamble. hooks/style.py adds the same rules in our own words at startup and after a compaction, with \"modo normal\" to turn it off. Using it says nothing about the person who uses it."
+    evaluated: 2026-11-16
+  - name: OpenCut
+    url: https://github.com/OpenCut-app/OpenCut
+    status: assess
+    profiles: [docs, web]
+    kind: app
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Video editor under watch. Its documents announced a rewrite with an API, an MCP server and a headless mode. Before trial: confirm which of those exist today. Never plan automation on an announced interface."
+    evaluated: 2026-11-10
+  - name: Ghidra
+    url: https://github.com/NationalSecurityAgency/ghidra
+    status: assess
+    profiles: [software, hardware]
+    kind: tool
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Reverse engineering suite, for a specialized profile. Before trial: the interface an agent can drive, the authorized scope of each analysis and the evidence it leaves."
+    evaluated: 2026-11-10
+  - name: Perchance
+    url: https://perchance.org/ai-text-to-image-generator
+    status: assess
+    profiles: [web, docs]
+    kind: app
+    license: not verified
+    cost: not verified
+    privacy: not verified
+    expression: []
+    notes: "Image generator used by hand in the browser. No official interface for automation was confirmed. Never build scraping, an unofficial proxy or a way around its CAPTCHA. Use images prepared by hand, with their credit."
+    evaluated: 2026-11-10
+  - name: Impeccable
+    url: https://github.com/pbakaus/impeccable
+    status: assess
+    profiles: [web]
+    kind: tool
+    license: Apache-2.0
+    cost: free
+    privacy: the detector runs locally with no LLM and no API key, and a URL scan opens a page in the installed Chrome or Edge
+    expression: [sober, balanced, expressive]
+    notes: Official repository, homepage impeccable.style, npm package impeccable 4.8.2 with one maintainer, license file and package both Apache-2.0. Its detector in crates/detect has 62 deterministic rules for AI slop, run with npx impeccable detect --json. Trial only the detect command on a throwaway copy of a site, and do not run npx impeccable install, which writes hooks and files for more than a dozen agents. Compare its findings with the standard's own web judgment before any adoption.
+    evaluated: 2026-11-12
+  - name: D2
+    url: https://github.com/terrastruct/d2
+    status: assess
+    profiles: [web, software, docs, infra]
+    kind: tool
+    license: MPL-2.0
+    cost: free
+    privacy: renders on the machine from a text file
+    expression: [sober, balanced]
+    notes: Diagrams as text with automatic layout, rendered to SVG or PNG by one binary. Mermaid stays the default because GitHub renders it in a README. Before trial, use it for one architecture diagram Mermaid lays out badly, commit the .d2 source next to the SVG and check the labels at the width the page shows it.
+    evaluated: 2026-11-16
+  - name: Graphviz
+    url: https://gitlab.com/graphviz/graphviz
+    status: assess
+    profiles: [software, data-ai, docs]
+    kind: tool
+    license: EPL-2.0
+    cost: free
+    privacy: renders on the machine
+    expression: [sober]
+    notes: Renders DOT graphs with the dot command. Fits graphs a program generates, such as dependency or pipeline graphs, where the layout must be computed. Commit the generator and the SVG, never only the image.
+    evaluated: 2026-11-16
+  - name: draw.io desktop
+    url: https://github.com/jgraph/drawio-desktop
+    status: assess
+    profiles: [web, software, docs, hardware]
+    kind: app
+    license: GPL-3.0 for the desktop app, the diagrams you draw are yours
+    cost: free
+    privacy: the desktop app works offline
+    expression: [sober, balanced]
+    notes: Diagrams drawn by hand and saved as .drawio XML. The owner's drawio_to_png repository converts them in the browser. Keep the .drawio source in the repository next to the exported SVG or PNG, so the next edit starts from the source.
+    evaluated: 2026-11-16
+  - name: Excalidraw
+    url: https://github.com/excalidraw/excalidraw
+    status: assess
+    profiles: [web, docs]
+    kind: app
+    license: MIT
+    cost: free
+    privacy: drawing happens in the browser, and sharing a live collaboration link sends the drawing to its server
+    expression: [balanced, expressive]
+    notes: Hand-drawn style sketches for explanations and early layouts. Export SVG with the scene embedded, so the file can be opened and edited again. Its look reads as a sketch, so it fits drafts and teaching, not a precise architecture.
+    evaluated: 2026-11-16
+  - name: Remotion
+    url: https://github.com/remotion-dev/remotion
+    status: assess
+    profiles: [web]
+    kind: library
+    license: Remotion License, free for individuals and for-profit companies with up to 3 employees, a company license above that
+    cost: free for the owner as an individual, paid for larger companies
+    privacy: renders on the machine
+    expression: [balanced, expressive]
+    notes: Videos written as React components. HyperFrames covers the same need with HTML and an Apache-2.0 license, so Remotion is only for a project that already uses React video. Check the license terms again before any work for a company.
+    evaluated: 2026-11-16
+  - name: Motion Canvas
+    url: https://github.com/motion-canvas/motion-canvas
+    status: assess
+    profiles: [web, docs]
+    kind: library
+    license: MIT
+    cost: free
+    privacy: renders on the machine
+    expression: [balanced, expressive]
+    notes: Explanatory animations written in TypeScript, with a timeline editor. An alternative to Manim for a project that is already TypeScript. Ship a short clip with captions and a poster, never the editor.
+    evaluated: 2026-11-16
+  - name: Openverse
+    url: https://github.com/WordPress/openverse
+    status: assess
+    profiles: [web, docs]
+    kind: tool
+    license: MIT for the code, each image keeps its own license
+    cost: free
+    privacy: the search words go to the Openverse API, run by WordPress
+    expression: [sober, balanced, expressive]
+    notes: Search of openly licensed images with the license and the author of each one. scripts/media.py search uses its API and keeps only licenses that allow commercial use and changes unless the owner allows more. Not yet called live from a session of this standard, because its API host was outside the network allowed there.
+    evaluated: 2026-11-16
+  - name: Wikimedia Commons
+    url: https://commons.wikimedia.org/wiki/Commons:API
+    status: assess
+    profiles: [web, docs]
+    kind: tool
+    license: each file keeps its own license, read from its LicenseShortName
+    cost: free
+    privacy: the search words go to the Wikimedia API
+    expression: [sober, balanced, expressive]
+    notes: Free media with license and author in the file metadata. scripts/media.py search reads them from the CommonsMetadata fields and drops files under fair use or with no license. Not yet called live from a session of this standard, because its API host was outside the network allowed there.
+    evaluated: 2026-11-16
+  - name: Lighthouse CI
+    url: https://github.com/GoogleChrome/lighthouse-ci
+    status: assess
+    profiles: [web]
+    kind: tool
+    license: Apache-2.0
+    cost: free
+    privacy: runs Chrome on the machine or in CI against the built site
+    expression: []
+    notes: Performance, accessibility and best practice scores with budgets that fail a build. Named in the owner's guide of 2026-11-15. Before trial, set budgets from the web profile's performance budget and run it on one built site.
+    evaluated: 2026-11-16
+  - name: Vale
+    url: https://github.com/errata-ai/vale
+    status: assess
+    profiles: [docs, web]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: runs on the machine
+    expression: []
+    notes: Prose linter with house style rules. scripts/text_check.py measures readability and sentence length, and Vale adds terminology and style rules where several documents must say things the same way. Named in the owner's guide of 2026-11-15.
+    evaluated: 2026-11-16
+  - name: Tesseract
+    url: https://github.com/tesseract-ocr/tesseract
+    status: assess
+    profiles: [web, data-ai, docs]
+    kind: tool
+    license: Apache-2.0
+    cost: free
+    privacy: runs on the machine
+    expression: []
+    notes: OCR that turns text inside an image into text, to write its alt text or a transcript. Named in the owner's guide of 2026-11-15. Check the result by reading it, because OCR misreads small and stylized text.
+    evaluated: 2026-11-16
+  - name: FFmpeg
+    url: https://ffmpeg.org/ffprobe.html
+    status: trial
+    profiles: [web, data-ai]
+    kind: tool
+    license: LGPL-2.1 or GPL depending on the build
+    cost: free
+    privacy: runs on the machine
+    expression: []
+    notes: ffprobe reads the container, codecs and length of a video, and ffmpeg converts it. Manim renders in GCP_Data_Engineer_Fieldnotes already need it. Check a shipped clip with ffprobe for H.264 or VP9, its size and its duration.
+    evaluated: 2026-11-16
+  - name: Axe.Windows
+    url: https://github.com/microsoft/axe-windows
+    status: assess
+    profiles: [software]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Microsoft's rules engine for automated accessibility tests of Windows apps through UI Automation, the one inside Accessibility Insights for Windows. Its CLI, AxeWindowsCLI, installs from an MSI, needs the .NET runtime and scans a running process with --processId or --processName, and writes an .a11ytest file when it finds errors. Not run by the standard yet. scripts/desktop_ux.py uia checks a few of the same rules with pywinauto and prints JSON an agent reads.
+    evaluated: 2026-11-16
+  - name: Windows-MCP
+    url: https://github.com/CursorTouch/Windows-MCP
+    status: hold
+    profiles: [software]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local, with full access to the desktop it runs on
+    expression: [sober, balanced, expressive]
+    notes: MCP server that lets an agent click, type, read the UI Automation tree and take screenshots on Windows, to reproduce a problem the way a person would. Version 0.8.8 needs Python 3.14 or later and uv. Its own security note says it runs with full system access, can do irreversible things, and that taking control back is best effort. Use it on a test account or machine with nothing else open, never on a desktop with open work. Not run by the standard yet. On hold, because FlaUI-MCP does the UX part with no shell, file or registry tool and no Python 3.14.
+    evaluated: 2026-11-16
+  - name: FlaUI-MCP
+    url: https://github.com/shanselman/FlaUI-MCP
+    status: assess
+    profiles: [software]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: MCP server built on FlaUI and UI Automation. Its twelve tools launch an app, read its accessibility tree, click, type, send keys, fill fields, read text, list and focus windows, capture a window as PNG and close it. It has no shell, file or registry tool. A self-contained release for x64 needs no .NET runtime. It drives whatever has the keyboard focus, so run it with nothing else open. Suggested to the owner on 2026-11-16 for FocoLocal and OpenTutor. Not run by the standard yet.
+    evaluated: 2026-11-16
+  - name: Microsoft Learn MCP Server
+    url: https://learn.microsoft.com/training/support/mcp
+    status: trial
+    profiles: [software, web, infra]
+    kind: tool
+    license: a free service of Microsoft
+    cost: free
+    privacy: the questions asked go to Microsoft
+    expression: [sober, balanced, expressive]
+    notes: Remote MCP server that searches and fetches official Microsoft documentation. On 2026-11-16 it returned the Windows UX guidelines behind desktop_ux.py and the desktop-improve skill, Segoe UI at 9 points or larger, 23 by 23 pixel targets, 5 pixels between targets, and windows opened by the system that do not take the keyboard focus.
+    evaluated: 2026-11-16
+  - name: Accessibility Insights for Windows
+    url: https://accessibilityinsights.io/docs/windows/overview/
+    status: assess
+    profiles: [software]
+    kind: app
+    license: MIT
+    cost: free
+    privacy: local
+    expression: [sober, balanced, expressive]
+    notes: Microsoft's app to inspect the UI Automation tree of a window, run the Axe.Windows rules on it, and see the tab order. For a person to find why Tab skips or traps a control. Not run by the standard yet.
+    evaluated: 2026-11-16
+  - name: Interlock
+    url: https://github.com/renzrollon/interlock
+    status: assess
+    profiles: [web, software, data-ai, infra]
+    kind: plugin
+    license: MIT
+    cost: free
+    privacy: local
+    expression: []
+    notes: "Spec driven Claude Code plugin on OpenSpec. Its merge verdict is computed, the worst signal wins and missing evidence counts against the change. scripts/readiness.py takes that rule for docs/specs: a critical requirement no test names blocks even with green CI. Needs Claude Code dynamic workflows and Node 22, not tried in a repository here."
+    evaluated: 2026-11-16
+  - name: Festival
+    url: https://github.com/Obedience-Corp/festival
+    status: assess
+    profiles: [web, software, data-ai, infra]
+    kind: tool
+    license: Apache-2.0
+    cost: free
+    privacy: local
+    expression: []
+    notes: "Fest plans long goals, Camp shares context across sessions and Obey supervises background work. The supervisor, plan reuse and pause file of the standard cover the same needs: a second session joins the running plan and a saved pause survives a restart. Obey was read from its documentation on 2026-11-17 and not run. It ships only as a binary from Obedience-Corp/obey-releases, whose license is not stated, and its source is private. On Windows its service uses the Task Scheduler, the same mechanism as scripts/supervisor.py. Its daemon opens LAN and Tailscale listeners and connects to a hub unless told not to, a network surface the supervisor does not have. The supervisor stays."
+    evaluated: 2026-11-17
+  - name: Murmur
+    url: https://github.com/rennf93/murmur
+    status: assess
+    profiles: [web, software, data-ai, infra]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: local, a Unix socket and a SQLite file under the user's home
+    expression: []
+    notes: "Message bus between AI CLI sessions. Sent, threaded and replied on Linux on 2026-11-16 with murmur-it from npm. It reads the process table with ps (src/proc.ts) and listens on a Unix socket (src/config.ts), so it does not run on Windows outside WSL. scripts/peerbox.py keeps the same model in one SQLite file for Windows."
+    evaluated: 2026-11-16
+  - name: ProjectArchitect
+    url: https://github.com/Druthulu/ProjectArchitect
+    status: hold
+    profiles: [web, software, data-ai, infra]
+    kind: plugin
+    license: Project Architect License, source available, no redistribution of it or a similar version
+    cost: free
+    privacy: local
+    expression: []
+    notes: "Plan with phases, memory in the repository and fresh contexts per task. Its license forbids shipping it or a substantially similar version, and the standard ships through SVN11X/skills, so nothing is copied. scripts/recall.py gives a new session the decisions and handoffs that fit its request, written independently. The owner may still install the original in a repository."
+    evaluated: 2026-11-16
+  - name: Ponytail
+    url: https://github.com/DietrichGebert/ponytail
+    status: assess
+    profiles: [web, software, data-ai, infra]
+    kind: skill
+    license: MIT
+    cost: free
+    privacy: local
+    expression: []
+    notes: "Reuse before writing, a symbol map, intensity levels, review, audit and a ledger of shortcut comments. scripts/reuse.py ranks existing functions for a task and puts them in the executor packet, and collects shortcut comments with their revisit condition. The skill itself was not installed here."
+    evaluated: 2026-11-16
+  - name: Cinecode
+    url: https://github.com/zakariaf/cinecode
+    status: trial
+    profiles: [web, docs]
+    kind: tool
+    license: MIT
+    cost: free, voices use the Gemini API
+    privacy: local, except voices, whose line text goes to Google Gemini TTS
+    expression: [balanced, expressive]
+    notes: "Storyboard JSON to a painted, animated film with music, effects and captions, rendered by code with Node and ffmpeg. On 2026-11-16 its test film made a 61 s animatic here without voices, captions burned in, music and effects, checked with ffprobe and a frame. render refuses to run while lines have no voice, and the animatic has no soft subtitle track although its log says so."
+    evaluated: 2026-11-16
+  - name: explainroo
+    url: https://github.com/vincentsch/explainroo
+    status: assess
+    profiles: [web, docs]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: "Voice (Kokoro), word timing (Whisper), music and rendering run on this machine with no account or key, and it has no telemetry. The first run downloads about 400 MB of models from Hugging Face. Only commands that name an outside service send data: ElevenLabs or Cartesia voices get the narration text, image and clip send the prompt to OpenRouter, publish posts to YouTube, Buffer or Blotato, and capture loads the page it is given."
+    expression: [balanced, expressive]
+    notes: "A coding agent writes script.md (the words) and scenes.js (drawings that appear on a spoken word), and render makes an MP4 with subtitles, chapters and a cover. record films a real web app with a pointer and zooms for a product demo. check and verify read any video file for layout, loudness, true peak, black frames, silence and misheard words. cut edits a recording by deleting its words. export writes a web player. Run it with npx --yes explainroo@0.6.0, never as a dependency. Needs Node.js 20.11 or newer, ffmpeg and Chrome. Spanish with the free voice also needs espeak-ng, and German has no free voice. Every video carries an explainroo.com watermark unless video.json sets watermark to false. Single maintainer. Next to Cinecode: Cinecode makes films with characters and its voices use Gemini, explainroo makes explainer and demo videos with a free voice made here. media.py video-check took its loudness, true peak, black frame and silence checks with the same thresholds. Read from the 0.6.0 source the owner sent on 2026-11-16 (tag v0.6.0 exists on GitHub), not run here. Before trial: doctor --language es passes on Windows and one video made in one repository passes verify."
+    evaluated: 2026-11-16
+  - name: PlanExe2
+    url: https://github.com/PlanExeOrg/PlanExe2
+    status: assess
+    profiles: [docs]
+    kind: tool
+    license: MIT
+    cost: free code. A full plan is about 220 to 260 calls on the owner's Claude subscription and takes 65 to 90 minutes
+    privacy: "The plan prompt and the text of every stage go to Anthropic through claude -p, or to the provider opencode is set to. Sections of the high tier search the web. Every stage writes JSON and Markdown files on this machine."
+    expression: []
+    notes: "Turns a 300 to 800 word prompt into a plan report for a real project, such as a business or a public work, not a code change. It leads with the decisions the owner still has to take (options, consequences, owner, decide by month), the choices it made on the owner's behalf to ratify, and the canonical facts every section must use, then a Gantt and an audit trail of what was validated. Python 3.11 standard library only, a DAG of 76 skills that resumes after a stop and keeps hand edits. scripts/arithmetic_check.py is its deterministic arithmetic checker, copied with its MIT notice. Read from the zip of its main branch the owner sent on 2026-11-16, the planner was not run here. Before trial: one plan for a real project of the owner, with the calls it spent measured."
+    evaluated: 2026-11-16
+  - name: Promptline
+    url: https://github.com/bekalpaslan/promptline
+    status: assess
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: app
+    license: MIT
+    cost: free
+    privacy: "Prompts are JSON files on this machine, with no account and no telemetry. At startup and once a day it fetches https://promptline.cc/latest.json to look for an update, which GitHub Pages logs with the IP address. The check can be turned off."
+    expression: []
+    notes: "Windows 10 and 11 tray app. Ctrl+Alt+V opens the saved prompts at the cursor and pastes the chosen one into Claude Code, Codex, Cursor or a browser, with the clipboard where {clipboard} was. A pack is one JSON file that an agent can write. scripts/promptline_pack.py writes a pack with the requests this standard understands. Installers are code signed from 0.2.28 and SmartScreen can still warn on a new release. Ctrl+Alt+V is Introduce Variable in JetBrains IDEs. Read from the zip of its master branch (0.2.30) the owner sent on 2026-11-16, not installed here. Before trial: winget install AlpaslanBek.Promptline, import the pack and paste a control request into Claude Code in the VS Code terminal."
+    evaluated: 2026-11-16
+  - name: copy-buttons
+    url: https://github.com/leonasdev/copy-buttons
+    status: assess
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: plugin
+    license: MIT
+    cost: free
+    privacy: "Runs inside Claude Code on the answer shown on screen. Its hooks make no network request and copy through the terminal with OSC 52."
+    expression: []
+    notes: "Claude Code plugin with copy buttons on each code block, on each table (as Markdown, as rows for Excel or Google Sheets, or boxed) and at the end of each final answer (as Markdown or as shown). It needs Claude Code's fullscreen mode, tui set to fullscreen in ~/.claude/settings.json, which changes how the terminal looks, and a terminal that reports pointer motion, or its end-of-answer setting. A Claude Code update can move or hide the buttons until the plugin follows. Read from the zip of its main branch (1.5.6) the owner sent on 2026-11-16, not installed here. Before trial: the owner chooses fullscreen mode, then /plugin install copy-buttons --marketplace leonasdev/copy-buttons."
+    evaluated: 2026-11-16
+  - name: jcode
+    url: https://github.com/1jehuang/jcode
+    status: assess
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: tool
+    license: MIT
+    cost: free code. The models are paid through the provider the owner signs in to
+    privacy: "Usage telemetry is on by default: provider and model names, feature families, session outcomes and performance, without prompts, code or answers. JCODE_NO_TELEMETRY or /telemetry turns it off. Sharing full transcripts is a separate program, off by default. The prompts and code of a session go to the model provider."
+    expression: []
+    notes: "Coding agent harness in Rust, next to Claude Code and OpenCode, which its authors measured at about 3 MB of RAM per extra headless session. Its swarm tells an agent when another one edits a file it read and lets agents message one another, it monitors the prompt cache from the usage the provider reports, and agentgrep returns matches with their enclosing function. hooks/shift_notice.py, hooks/cache_notice.py and scripts/agentgrep.py follow those three ideas with own code. It signs in to Claude with OAuth: read Anthropic's terms before using a Claude subscription from another harness. Installs with install.sh, or install.ps1 on Windows. Read from a shallow clone of main (ddde657) on 2026-11-16, not installed here. Before trial: one delegated unit through it on this machine, compared with OpenCode in agent-benchmark for time, memory and pass rate."
+    evaluated: 2026-11-16
+  # Engines, pilots and services named in the owner's plan of 2026-11-21 ("Plan de mejoras para STANDARDS"). The figures
+  # come from that plan and from what each project reports about itself. None was opened or measured from this session.
+  - name: llama.cpp
+    url: https://github.com/ggml-org/llama.cpp/releases
+    status: assess
+    profiles: [data-ai]
+    kind: tool
+    license: MIT
+    cost: free
+    privacy: "Runs on this machine. llama-server listens on loopback when started so."
+    expression: []
+    notes: "First engine to compare with Ollama on the RTX 2060 under Windows: the official Vulkan binary and one known GGUF. Measure prompt processing and generation apart, with the same answer, weights hash, quantization, template, context, output limit, temperature and task. It becomes an executor only after it beats the current route by the pilot rule of docs/006-model-analyzer.md."
+    evaluated: 2026-11-21
+  - name: llama.cpp-BELLS
+    url: https://github.com/DGuckert/llama.cpp-BELLS
+    status: assess
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Fork of llama.cpp for MoE models on small cards. The project reports 28.3 against 22.4 tokens per second for Qwen3-30B-A3B Q4 on another RTX 2060 with 6 GB. A pilot only if a compatible MoE GGUF is already on disk, with the same file and task on this notebook."
+    evaluated: 2026-11-21
+  - name: FreeToken-Kai
+    url: https://github.com/yuuki-net/FreeToken-Kai
+    status: assess
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine, under WSL2."
+    expression: []
+    notes: "Fork of FreeToken (https://github.com/FlashML-org/FreeToken) that documents Turing cards and 14 to 16 tokens per second of generation at a 20k context for gpt-oss-20b on another RTX 2060. The original FreeToken announces native support for RTX 30, 40 and 50 only. A pilot only if gpt-oss-20b is wanted."
+    evaluated: 2026-11-21
+  - name: ik_llama.cpp
+    url: https://github.com/ikawrakow/ik_llama.cpp
+    status: assess
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Fork of llama.cpp with its own quantizations and optimizations. Compare one identical GGUF with official llama.cpp only when a concrete quantization needs it. A CUDA build needs a toolkit that still supports sm_75. Record when the backend changed too."
+    evaluated: 2026-11-21
+  - name: InferSSD
+    url: https://github.com/wici-ai/inferssd/releases/tag/v0.1.5
+    status: assess
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Loads MoE experts from the SSD, version 0.1.5. Only for one task that needs a model larger than the card. Check the installer signature, the model architecture, the real disk space and the disk activity. Stop on sustained paging or when it passes the time limit of the task."
+    evaluated: 2026-11-21
+  - name: KTransformers
+    url: https://github.com/kvcache-ai/ktransformers
+    status: hold
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Its documented AVX2 profile asks for 24 GB of graphics memory. Reopen when a profile is shown for sm_75 and 6 GiB."
+    evaluated: 2026-11-21
+  - name: MoE-Infinity
+    url: https://github.com/EfficientMoE/MoE-Infinity
+    status: hold
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Its default build targets sm_80 and sm_90, not the sm_75 of the RTX 2060. Reopen when a build is shown for sm_75 and 6 GiB."
+    evaluated: 2026-11-21
+  - name: Slipstream
+    url: https://github.com/Schero94/slipstream
+    status: hold
+    profiles: [data-ai]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Its documented inference from the SSD targets Apple Silicon. Reopen for a compatible machine. On the Windows notebook the comparable test is InferSSD."
+    evaluated: 2026-11-21
+  - name: AirLLM
+    url: https://github.com/lyogavin/airllm/releases/tag/v3.1.0
+    status: hold
+    profiles: [data-ai]
+    kind: library
+    license: not verified
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "The Kimi K3 setup of the owner's guide cites 1.56 TB of weights, more than the whole SSD of the notebook. The same holds for kimi-k3-in-c (https://github.com/FareedKhan-dev/kimi-k3-in-c), kept to study the code with its small tests. Reopen inference when compatible weights and a task with a realistic time limit exist."
+    evaluated: 2026-11-21
+  - name: Diffusers_minimax-h3
+    url: https://github.com/animede/Diffusers_minimax-h3
+    status: hold
+    profiles: [data-ai, web]
+    kind: library
+    license: "code not verified. The community license of the MiniMax H3 weights (https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE) limits the territory and extends the limit to the outputs"
+    cost: free
+    privacy: "Runs on this machine."
+    expression: []
+    notes: "Community implementation that makes video with synchronized audio. The repository reports 237 s for a 5 s clip at 512 by 512 on an RTX 3050 with 6 GB and an NVMe disk. The license of the weights excludes the European Union, the United Kingdom, the Republic of Korea and the United States, so its clips never go on an international public site. Stays in the lab while the intended use is not covered. A pilot only for an original clip: its own environment, a fixed seed, and a decodable MP4 with duration, frames and audio checked, peak memory and total time recorded, through scripts/media.py."
+    evaluated: 2026-11-21
+  - name: Memorilla
+    url: https://github.com/snap-stanford/memorilla
+    status: hold
+    profiles: [data-ai]
+    kind: library
+    license: not verified
+    cost: free
+    privacy: "Runs on the machine that trains it."
+    expression: []
+    notes: "Latent memory for one Qwen3-8B. Its published recipes used H100 cards with 80 GB. Future research. The recall of this standard stays auditable by source, see docs/005-verification-and-orchestration.md."
+    evaluated: 2026-11-21
+  - name: Transformers.js
+    url: https://github.com/huggingface/transformers.js
+    status: assess
+    profiles: [web, data-ai]
+    kind: library
+    license: Apache-2.0
+    cost: free
+    privacy: "In a build step it runs in Node.js on the build machine. In a page it downloads the model weights to the visitor's device."
+    expression: []
+    notes: "Runs models in the browser or in Node.js. Use it in a Node.js build step when it makes the search index or the tags simpler. The public page loads only what the build made and never downloads weights. A demo of inference in the browser stays a separate option."
+    evaluated: 2026-11-21
+  - name: model-viewer
+    url: https://modelviewer.dev/
+    status: assess
+    profiles: [web, hardware]
+    kind: library
+    license: Apache-2.0
+    cost: free
+    privacy: "Renders in the browser. The page serves the GLB file."
+    expression: [sober, balanced]
+    notes: "Web component that shows a GLB with rotation and zoom. For an assembly or a part with materials or color: a GLB on GitHub Pages, loaded when the visitor presses View in 3D, with a poster first. Test rotation and zoom on desktop and phone."
+    evaluated: 2026-11-21
+  - name: OpenSandbox
+    url: https://github.com/opensandbox-group/OpenSandbox
+    status: assess
+    profiles: [software, web, infra]
+    kind: tool
+    license: not verified
+    cost: free
+    privacy: "Runs containers on this machine with Docker or WSL2."
+    expression: []
+    notes: "Disposable sandboxes for Python and browser tests. A QA pilot only when a test leaves dependencies or files that are hard to clean: one Linux container, a Python or Playwright test, limits on CPU, memory and time, no network for the prepared test, and no mount of the user profile, its credentials or the Docker socket. Reuse worktrees and scripts/safe_patch.py. Accepted when two runs of the same revision leave the checkout unchanged and a cancel frees the container. Native checks of Windows apps stay on Windows."
+    evaluated: 2026-11-21
+  - name: T3 Code
+    url: https://github.com/pingdotgg/t3code
+    status: assess
+    profiles: [software, infra]
+    kind: app
+    license: not verified
+    cost: "free. The plan says T3 Connect gives up to three machines on a free account and phones or browsers take no place. Each model provider keeps its own terms"
+    privacy: "T3 Connect links the owner's phone or browser to the remote machine. The prompts and code of a session go to the model provider the agent uses."
+    expression: []
+    notes: "Interface for coding agents, installed on the remote node to follow and steer a task from the phone while the notebook is off. It has no native support for local models, so the work for the RTX goes through the queue of scripts/workqueue.py. Install: docs/user/install.md, remote access: docs/user/remote-access.md, the Linux service: docs/user/background-service.md of the repository. Before trial: t3 status and t3 service status on the VM, a phone approved as a new device, and the connection again after SSH is closed."
+    evaluated: 2026-11-21
+  - name: andrej-karpathy-skills
+    url: https://github.com/multica-ai/andrej-karpathy-skills
+    status: adopt
+    profiles: [web, software, data-ai, hardware, docs, infra]
+    kind: reference
+    license: MIT, stated in its README and SKILL.md. The repository has no LICENSE file
+    cost: free
+    privacy: "Text only. Nothing runs and nothing leaves the machine."
+    expression: []
+    notes: "One skill and a CLAUDE.md with four principles drawn from Andrej Karpathy's post on the coding mistakes of language models: think before coding, simplicity first, surgical changes and goal-driven execution. Since 1.24.0 the generated AGENTS.md carries them in the standard's own words, the code-review skill checks that every changed line traces to the task, and its evals.yml has a case for drive-by changes. Installing the plugin as well repeats the same rules. Read from a shallow clone of main (2c60614) on 2026-11-21."
+    evaluated: 2026-11-21
+  - name: HyperQwen
+    url: https://github.com/syv-ai/HyperQwen
+    status: hold
+    profiles: [data-ai]
+    kind: tool
+    license: Apache-2.0
+    cost: free. The image is 9.5 GB and the requantized model about 20 GB on disk
+    privacy: "Runs on this machine. The API binds 127.0.0.1 until a key is set and BIND is changed."
+    expression: []
+    notes: "Qwen3.8-27B on a patched, pinned vLLM 0.33.0 with an OpenAI-compatible API and key auth, in Docker or WSL2. Its README reports 127 tokens per second single stream and about 1,035 at 64 concurrent requests on one RTX 3090 at 250 W, and 381 when the answer quotes its own prompt. It needs one card with 24 GB or several together: the smallest setups reported are two 12 GB RTX 3060 and four 8 GB RTX 3060 Ti, and the Turing launcher was measured on two modified 22 GB RTX 2080 Ti. On hold for the 6 GB RTX 2060. Reopen with such a card, or when its roadmap ships a smaller Qwen checkpoint for 12 and 16 GB cards. The standard took its field report fields for comparable runs and its one line per patch, see docs/006-model-analyzer.md and the software profile. Read from a shallow clone of main (3d6c954) on 2026-11-21."
+    evaluated: 2026-11-21
+
